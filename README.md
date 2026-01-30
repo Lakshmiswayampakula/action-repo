@@ -1,33 +1,28 @@
-# Action Repo
+# Action Repo (Webhook Trigger)
 
-This repository is used to trigger GitHub Webhooks for testing a Flask-based webhook receiver.
+This repo is the **trigger repository** for the GitHub webhook flow. I use it to generate Push, Pull Request, and Merge events that are sent to the webhook receiver. When you push, open a PR, or merge in this repo, GitHub sends webhooks to the configured endpoint and events show up on the dashboard.
 
-## 🎯 Purpose
+## Events this repo can trigger
 
-This repository serves as the **trigger repository** (`action-repo`) that sends webhook events to the webhook receiver application. When you perform actions in this repository (push, create pull request, merge), GitHub automatically sends webhook events to the configured endpoint.
+1. **Push** – Push commits to any branch.
+2. **Pull Request** – Create or update a pull request.
+3. **Merge** – Merge a pull request.
 
-## 📋 Supported Actions
+## How to set up
 
-This repository can trigger the following webhook events:
+### 1. Create the GitHub repository
 
-1. **PUSH** - When you push commits to any branch
-2. **PULL_REQUEST** - When you create or update a pull request
-3. **MERGE** - When you merge a pull request
+1. On GitHub, create a new repository (e.g. `action-repo`).
+2. Do **not** initialize with README, .gitignore, or license if you are pushing this folder.
 
-## 🚀 Setup Instructions
+### 2. Push this code to GitHub
 
-### 1. Create GitHub Repository
-
-1. Go to [GitHub](https://github.com) and create a new repository named `action-repo`
-2. **Do NOT initialize** with README, .gitignore, or license (we already have files)
-
-### 2. Initialize and Push
+From the project folder:
 
 ```bash
-cd "c:\Users\laksh\OneDrive\Desktop\Assignment_Task\action-repo-main"
 git init
 git add .
-git commit -m "Initial commit: Action repo for webhook testing"
+git commit -m "Initial commit"
 git branch -M main
 git remote add origin https://github.com/YOUR_USERNAME/action-repo.git
 git push -u origin main
@@ -35,106 +30,59 @@ git push -u origin main
 
 Replace `YOUR_USERNAME` with your GitHub username.
 
-### 3. Configure GitHub Webhook
+### 3. Configure the webhook
 
-1. Go to your `action-repo` repository on GitHub
-2. Navigate to **Settings → Webhooks → Add webhook**
-3. Configure the webhook:
-   - **Payload URL**: `https://webhook-repo-3.onrender.com/webhook/receiver`
-   - **Content type**: `application/json`
-   - **Secret**: (optional, leave empty for now)
-   - **Which events would you like to trigger this webhook?**
-     - Select: **"Let me select individual events"**
-     - ✅ Check **"Pushes"**
-     - ✅ Check **"Pull requests"**
-   - **Active**: ✅ Checked
-4. Click **Add webhook**
+1. In the repo on GitHub: **Settings → Webhooks → Add webhook**.
+2. Set:
+   - **Payload URL:** `https://YOUR_DASHBOARD_HOST/webhook/receiver`  
+     (e.g. `https://your-app.onrender.com/webhook/receiver` if the receiver is on Render.)
+   - **Content type:** `application/json`.
+   - **Which events:** Choose “Let me select individual events”, then enable **Pushes** and **Pull requests**.
+   - **Active:** checked.
+3. Save the webhook.
 
-## 🧪 Testing Webhook Events
+After this, pushes and PR/merge actions in this repo will send events to your webhook receiver.
 
-### Test 1: PUSH Event
+## How to test
+
+### Push event
 
 ```bash
-# Make a change to any file
-echo "# Test commit" >> test.txt
+echo "Test" >> test.txt
 git add test.txt
-git commit -m "Test push event"
+git commit -m "Test push"
 git push origin main
 ```
 
-**Expected Result**: Check your webhook dashboard at `https://webhook-repo-3.onrender.com/` - you should see:
-```
-{your-username} pushed to main on {timestamp}
-```
+Then open your dashboard; you should see a push event (e.g. “{username} pushed to main on {timestamp}”).
 
-### Test 2: PULL_REQUEST Event
+### Pull Request event
 
-1. Create a new branch:
-   ```bash
-   git checkout -b feature-test
-   ```
-
-2. Make changes and commit:
-   ```bash
-   echo "Feature changes" >> feature.txt
-   git add feature.txt
-   git commit -m "Add feature"
-   git push origin feature-test
-   ```
-
-3. On GitHub, create a Pull Request:
-   - Go to your repository → **Pull requests → New pull request**
-   - Select `feature-test` → `main`
-   - Click **Create pull request**
-
-**Expected Result**: Dashboard should show:
-```
-{your-username} submitted a pull request from feature-test to main on {timestamp}
+```bash
+git checkout -b feature-test
+echo "Feature" >> feature.txt
+git add feature.txt
+git commit -m "Add feature"
+git push origin feature-test
 ```
 
-### Test 3: MERGE Event
+On GitHub: **Pull requests → New pull request** (e.g. `feature-test` → `main`) → **Create pull request**.  
+Check the dashboard for the pull request event.
 
-1. Merge the pull request you created in Test 2:
-   - Go to the PR page
-   - Click **Merge pull request**
-   - Confirm merge
+### Merge event
 
-**Expected Result**: Dashboard should show:
-```
-{your-username} merged branch feature-test to main on {timestamp}
-```
+On the same PR page, click **Merge pull request** and confirm.  
+The dashboard should show a merge event.
 
-## 📁 Repository Structure
+## Repository contents
 
-```
-action-repo/
-├── README.md          # This file
-├── main.py            # Sample Python file
-├── .gitignore         # Git ignore rules
-└── test.txt           # Sample file for testing
-```
+- `README.md` – This file.
+- `main.py` – Sample script.
+- `test.txt` – Sample file for quick push tests.
+- `.gitignore` – Git ignore rules.
 
-## 🔗 Related Repositories
+## Notes
 
-- **Webhook Receiver**: [webhook-repo](https://github.com/YOUR_USERNAME/webhook-repo)
-- **Dashboard URL**: https://webhook-repo-3.onrender.com/
-
-## 📝 Notes
-
-- All webhook events are sent to: `https://webhook-repo-3.onrender.com/webhook/receiver`
-- Events are stored in MongoDB and displayed on the dashboard
-- Dashboard auto-refreshes every 15 seconds
-- Make sure your MongoDB Atlas IP Access List allows connections from Render
-
-## ✅ Assignment Checklist
-
-- ✅ Repository created and pushed to GitHub
-- ✅ GitHub webhook configured with correct endpoint
-- ✅ Push events tested and working
-- ✅ Pull request events tested and working
-- ✅ Merge events tested and working
-- ✅ All events visible on dashboard
-
----
-
-**Created for TechStax Developer Assessment Task**
+- The webhook **Payload URL** must point to your deployed webhook receiver (e.g. your Render app URL + `/webhook/receiver`).
+- If events don’t appear, check **Settings → Webhooks → your webhook → Recent Deliveries** on GitHub for failed deliveries.
+- The dashboard usually refreshes every 15 seconds, so new events may take a moment to show.
