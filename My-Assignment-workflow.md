@@ -254,6 +254,5 @@ Now any push/PR/merge in `action-repo` updates the deployed dashboard automatica
 **In production**
 
 1. Deploy `webhook-repo` via Render as described above.  
-2. Point `action-repo` webhooks to the deployed `/webhook/receiver`.  
+2. Point `action-repo` webhooks to the deployed `/webhook/receiver`(For payload URL- use render genered Server) 
 3. Use GitHub UI for pushes/PRs/merges; monitor events on your hosted dashboard.
-
